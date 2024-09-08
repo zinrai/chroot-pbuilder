@@ -37,32 +37,17 @@ chroot-aide provides three main commands: `create`, `update`, and `login`. Each 
 ### Creating a chroot environment
 
 ```
-$ chroot-aide create -d <distribution> [-a <architecture>] [-r <role>] [-- additional pbuilder options]
-```
-
-Example:
-```
-chroot-aide create -d sid -a amd64
+$ chroot-aide create -d sid -a amd64
 ```
 
 ### Updating a chroot environment
 
-```
-$ chroot-aide update -d <distribution> [-a <architecture>] [-r <role>] [-- additional pbuilder options]
-```
-
-Example:
 ```
 $ chroot-aide update -d bullseye -a arm64
 ```
 
 ### Logging into a chroot environment
 
-```
-$ chroot-aide login -d <distribution> [-a <architecture>] [-r <role>] [-- additional pbuilder options]
-```
-
-Example:
 ```
 $ chroot-aide login -d sid -a amd64 -- --save-after-login
 ```
