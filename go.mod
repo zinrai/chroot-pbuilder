@@ -1,4 +1,4 @@
-module github.com/zinrai/chroot-aide
+module github.com/zinrai/pbuilder-aide
 
 go 1.22.5
 

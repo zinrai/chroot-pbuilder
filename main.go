@@ -24,7 +24,7 @@ func main() {
 	}
 
 	var rootCmd = &cobra.Command{
-		Use:   "chroot-aide",
+		Use:   "pbuilder-aide",
 		Short: "A tool to simplify chroot environment creation and management using pbuilder",
 	}
 
@@ -107,7 +107,7 @@ func runPbuilder(operation string, args []string) {
 		os.Exit(1)
 	}
 
-	bindMountDir := filepath.Join(homeDir, ".chroot-aide", fmt.Sprintf("%s-%s-%s", distribution, architecture, role))
+	bindMountDir := filepath.Join(homeDir, ".pbuilder-aide", fmt.Sprintf("%s-%s-%s", distribution, architecture, role))
 	err = os.MkdirAll(bindMountDir, 0755)
 	if err != nil {
 		fmt.Println("Error creating bind mount directory:", err)
