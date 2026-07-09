@@ -22,14 +22,6 @@ chroot-pbuilder is a tool designed to simplify the creation, update, and login p
 
 Please ensure that both `sudo` and `pbuilder` are installed and available in your system's PATH. chroot-pbuilder will check for these commands at startup and exit with an error message if they are not found.
 
-## Installation
-
-Build the program:
-
-```
-$ go build
-```
-
 ## Usage
 
 chroot-pbuilder provides three main commands: `create`, `update`, and `login`. Each command requires the `--distribution` flag, and accepts optional `--architecture` and `--role` flags.
