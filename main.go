@@ -10,6 +10,12 @@ import (
 )
 
 var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
+var (
 	distribution string
 	architecture string
 	role         string
@@ -17,11 +23,6 @@ var (
 )
 
 func main() {
-	if err := checkRequiredCommands(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
 	if len(os.Args) < 2 {
 		usage()
 		os.Exit(1)
@@ -29,10 +30,22 @@ func main() {
 
 	operation := os.Args[1]
 	switch operation {
-	case "create", "update", "login":
-		run(operation, os.Args[2:])
+	case "version", "-v", "--version":
+		runVersion()
+		return
 	case "-h", "--help", "help":
 		usage()
+		return
+	}
+
+	if err := checkRequiredCommands(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	switch operation {
+	case "create", "update", "login":
+		run(operation, os.Args[2:])
 	default:
 		fmt.Printf("unknown command: %s\n\n", operation)
 		usage()
@@ -51,6 +64,10 @@ func usage() {
 	fmt.Println("  --architecture  Architecture (default: amd64)")
 	fmt.Println("  --role          Role")
 	fmt.Println("  --force         Overwrite existing base.tgz (create only)")
+}
+
+func runVersion() {
+	fmt.Printf("chroot-pbuilder %s (commit %s, built %s)\n", version, commit, date)
 }
 
 func run(operation string, args []string) {
