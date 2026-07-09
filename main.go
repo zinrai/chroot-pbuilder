@@ -2,12 +2,11 @@ package main
 
 import (
 	"crypto/sha512"
+	"flag"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -23,42 +22,59 @@ func main() {
 		os.Exit(1)
 	}
 
-	var rootCmd = &cobra.Command{
-		Use:   "chroot-pbuilder",
-		Short: "A tool to simplify chroot environment creation and management using pbuilder",
-	}
-
-	var createCmd = &cobra.Command{
-		Use:   "create [additional pbuilder options]",
-		Short: "Create a new chroot environment",
-		Run:   runCreate,
-	}
-
-	var updateCmd = &cobra.Command{
-		Use:   "update [additional pbuilder options]",
-		Short: "Update an existing chroot environment",
-		Run:   runUpdate,
-	}
-
-	var loginCmd = &cobra.Command{
-		Use:   "login [additional pbuilder options]",
-		Short: "Log in to a chroot environment",
-		Run:   runLogin,
-	}
-
-	rootCmd.PersistentFlags().StringVarP(&distribution, "distribution", "d", "", "Distribution (required)")
-	rootCmd.PersistentFlags().StringVarP(&architecture, "architecture", "a", "amd64", "Architecture")
-	rootCmd.PersistentFlags().StringVarP(&role, "role", "r", "", "Role")
-	createCmd.Flags().BoolVarP(&force, "force", "f", false, "Force creation even if baseTgz exists")
-
-	rootCmd.MarkPersistentFlagRequired("distribution")
-
-	rootCmd.AddCommand(createCmd, updateCmd, loginCmd)
-
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+	if len(os.Args) < 2 {
+		usage()
 		os.Exit(1)
 	}
+
+	operation := os.Args[1]
+	switch operation {
+	case "create", "update", "login":
+		run(operation, os.Args[2:])
+	case "-h", "--help", "help":
+		usage()
+	default:
+		fmt.Printf("unknown command: %s\n\n", operation)
+		usage()
+		os.Exit(1)
+	}
+}
+
+func usage() {
+	fmt.Println("chroot-pbuilder simplifies chroot environment management using pbuilder.")
+	fmt.Println()
+	fmt.Println("Usage:")
+	fmt.Println("  chroot-pbuilder <create|update|login> --distribution <dist> [options] [-- pbuilder options]")
+	fmt.Println()
+	fmt.Println("Options:")
+	fmt.Println("  --distribution  Distribution (required)")
+	fmt.Println("  --architecture  Architecture (default: amd64)")
+	fmt.Println("  --role          Role")
+	fmt.Println("  --force         Overwrite existing base.tgz (create only)")
+}
+
+func run(operation string, args []string) {
+	fs := flag.NewFlagSet(operation, flag.ExitOnError)
+	fs.StringVar(&distribution, "distribution", "", "Distribution (required)")
+	fs.StringVar(&architecture, "architecture", "amd64", "Architecture")
+	fs.StringVar(&role, "role", "", "Role")
+	if operation == "create" {
+		fs.BoolVar(&force, "force", false, "Overwrite existing base.tgz")
+	}
+
+	fs.Parse(args)
+
+	if distribution == "" {
+		fmt.Println("Error: --distribution is required")
+		os.Exit(1)
+	}
+
+	if operation == "create" {
+		runCreate(fs.Args())
+		return
+	}
+
+	runPbuilder(operation, fs.Args())
 }
 
 func checkRequiredCommands() error {
@@ -71,7 +87,7 @@ func checkRequiredCommands() error {
 	return nil
 }
 
-func runCreate(cmd *cobra.Command, args []string) {
+func runCreate(args []string) {
 	baseTgz := getBaseTgzPath(resolveRole())
 
 	if _, err := os.Stat(baseTgz); err == nil {
@@ -88,14 +104,6 @@ func runCreate(cmd *cobra.Command, args []string) {
 	}
 
 	runPbuilder("create", args)
-}
-
-func runUpdate(cmd *cobra.Command, args []string) {
-	runPbuilder("update", args)
-}
-
-func runLogin(cmd *cobra.Command, args []string) {
-	runPbuilder("login", args)
 }
 
 func runPbuilder(operation string, args []string) {

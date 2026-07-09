@@ -32,31 +32,31 @@ $ go build
 
 ## Usage
 
-chroot-pbuilder provides three main commands: `create`, `update`, and `login`. Each command requires the `-d` (distribution) flag, and accepts optional `-a` (architecture) and `-r` (role) flags.
+chroot-pbuilder provides three main commands: `create`, `update`, and `login`. Each command requires the `--distribution` flag, and accepts optional `--architecture` and `--role` flags.
 
 ### Creating a chroot environment
 
 ```
-$ chroot-pbuilder create -d sid -a amd64
+$ chroot-pbuilder create --distribution sid --architecture amd64
 ```
 
 ### Updating a chroot environment
 
 ```
-$ chroot-pbuilder update -d bullseye -a arm64
+$ chroot-pbuilder update --distribution bullseye --architecture arm64
 ```
 
 ### Logging into a chroot environment
 
 ```
-$ chroot-pbuilder login -d sid -a amd64 -- --save-after-login
+$ chroot-pbuilder login --distribution sid --architecture amd64 -- --save-after-login
 ```
 
 ## Options
 
-- `-d, --distribution`: (Required) The distribution to use
-- `-a, --architecture`: (Optional, default: amd64) The architecture to use
-- `-r, --role`: (Optional) Custom role name
+- `--distribution`: (Required) The distribution to use
+- `--architecture`: (Optional, default: amd64) The architecture to use
+- `--role`: (Optional) Custom role name
 - `--force`: (For create command only) Overwrite existing base.tgz
 
 Additional pbuilder options can be specified after `--`.
