@@ -72,7 +72,7 @@ func checkRequiredCommands() error {
 }
 
 func runCreate(cmd *cobra.Command, args []string) {
-	baseTgz := getBaseTgzPath()
+	baseTgz := getBaseTgzPath(resolveRole())
 
 	if _, err := os.Stat(baseTgz); err == nil {
 		if !force {
@@ -99,7 +99,8 @@ func runLogin(cmd *cobra.Command, args []string) {
 }
 
 func runPbuilder(operation string, args []string) {
-	baseTgz := getBaseTgzPath()
+	effectiveRole := resolveRole()
+	baseTgz := getBaseTgzPath(effectiveRole)
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -107,7 +108,7 @@ func runPbuilder(operation string, args []string) {
 		os.Exit(1)
 	}
 
-	bindMountDir := filepath.Join(homeDir, ".chroot-pbuilder", fmt.Sprintf("%s-%s-%s", distribution, architecture, role))
+	bindMountDir := filepath.Join(homeDir, ".chroot-pbuilder", fmt.Sprintf("%s-%s-%s", distribution, architecture, effectiveRole))
 	err = os.MkdirAll(bindMountDir, 0755)
 	if err != nil {
 		fmt.Println("Error creating bind mount directory:", err)
@@ -136,17 +137,21 @@ func runPbuilder(operation string, args []string) {
 	}
 }
 
-func getBaseTgzPath() string {
-	if role == "" {
-		hash := sha512.Sum512([]byte(distribution + "-" + architecture))
-		role = fmt.Sprintf("%x", hash)[:10]
+func resolveRole() string {
+	if role != "" {
+		return role
 	}
 
+	hash := sha512.Sum512([]byte(distribution + "-" + architecture))
+	return fmt.Sprintf("%x", hash)[:10]
+}
+
+func getBaseTgzPath(effectiveRole string) string {
 	baseDir, err := os.Getwd()
 	if err != nil {
 		fmt.Println("Error getting current directory:", err)
 		os.Exit(1)
 	}
 
-	return filepath.Join(baseDir, fmt.Sprintf("%s-%s-%s.tgz", distribution, architecture, role))
+	return filepath.Join(baseDir, fmt.Sprintf("%s-%s-%s.tgz", distribution, architecture, effectiveRole))
 }
